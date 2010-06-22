@@ -15,8 +15,17 @@ class Lolcat
   end
   
   def run
-    @sock.read().to_s().print()
+    line = read_line()
+    process_line(line)
     run()
+  end
+  
+  def read_line
+    @sock.read().to_s()
+  end
+  
+  def process_line(line)
+    line.print()
   end
 end
 
