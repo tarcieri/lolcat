@@ -6,12 +6,15 @@
 #
 
 class Lolcat
-  def initialize
-    nick = "powcat"
-    
-    @sock = TCPSocket("irc.freenode.net", 6667, {:packet => :line})
-    @sock.write("USER #{nick} * * #{nick}\n")
-    @sock.write("NICK #{nick}\n")
+  def initialize(server, port, nick, channel)
+    (@server, @port, @nick, @channel) = (server, port, nick, channel)    
+    @sock = TCPSocket(@server, @port, {:packet => :line})
+  end
+  
+  def register
+    @sock.write("USER #{@nick} * * #{@nick}\n")
+    @sock.write("NICK #{@nick}\n")
+    #@sock.write("JOIN #{@channel}\n")
   end
   
   def run
@@ -50,4 +53,6 @@ class Router
   end
 end
 
-Lolcat().run()
+cat = Lolcat("irc.freenode.net", 6667, "powcat", "#reia")
+cat.register()
+cat.run()
