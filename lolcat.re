@@ -14,11 +14,11 @@ class Lolcat
   def register
     @sock.write("USER #{@nick} * * #{@nick}\n")
     @sock.write("NICK #{@nick}\n")
-    #@sock.write("JOIN #{@channel}\n")
+    @sock.write("JOIN #{@channel}\n")
   end
   
   def run
-    line = read_line()
+    line = read_line()    
     process_line(line)
     run()
   end
