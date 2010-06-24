@@ -21,11 +21,32 @@ class Lolcat
   end
   
   def read_line
-    @sock.read().to_s()
+    @sock.read().to_s().chop()
   end
   
   def process_line(line)
-    line.print()
+    line.puts()    
+    router = Router(line)
+    
+    if router.ping?()
+      handle_ping(line)
+    end
+  end
+  
+  def handle_ping(line)
+    [_, message] = %r/PING :(.*?)[\r\n]*$/.match(line)
+    Main.puts("OHAI THAR SERVAR #{message}! PONG!!!")
+    @sock.write("PONG :#{message}\r\n")
+  end
+end
+
+class Router
+  def initialize(line)
+    @line = line
+  end
+  
+  def ping?
+    %r/^PING /.match(@line)
   end
 end
 
