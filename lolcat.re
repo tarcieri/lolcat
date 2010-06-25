@@ -37,8 +37,13 @@ class Lolcat
   end
   
   def handle_ping(line)
+    # The colors, Duke! The colors!
     [_, message] = %r/PING :(.*?)[\r\n]*$/.match(line)
+    
+    # Lulzy debug message
     Main.puts("OHAI THAR SERVAR #{message}! PONG!!!")
+    
+    # Oh yeah here's where we actually do the important thing
     @sock.write("PONG :#{message}\r\n")
   end
 end
@@ -53,6 +58,6 @@ class Router
   end
 end
 
-cat = Lolcat("irc.freenode.net", 6667, "powcat", "#reia")
+cat = Lolcat("irc.freenode.net", 6667, "ceilingcat", "#reia")
 cat.register()
 cat.run()
