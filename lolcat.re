@@ -11,6 +11,12 @@ class Lolcat
     @sock = TCPSocket(@server, @port, {:packet => :line})
   end
   
+  # attr_reader ftw
+  def server; @server; end
+  def port; @port; end
+  def nick; @nick; end
+  def channel; @channel; end
+  
   def register
     @sock.write("USER #{@nick} * * #{@nick}\n")
     @sock.write("NICK #{@nick}\n")
@@ -29,10 +35,12 @@ class Lolcat
   
   def process_line(line)
     line.puts()    
-    router = Router(line)
+    router = Router(self, line)
     
     if router.ping?()
       handle_ping(line)
+    elseif router.ohai?()
+      send_message("PRIVMSG #{@channel} :OHAI!!")
     end
   end
   
@@ -44,17 +52,28 @@ class Lolcat
     Main.puts("OHAI THAR SERVAR #{message}! PONG!!!")
     
     # Oh yeah here's where we actually do the important thing
-    @sock.write("PONG :#{message}\r\n")
+    send_message("PONG :#{message}")
+  end
+  
+  def send_message(msg)
+    @sock.write("#{msg}\r\n")
   end
 end
 
 class Router
-  def initialize(line)
-    @line = line
+  def initialize(bot, line)
+    (@bot, @line) = (bot, line)
   end
   
   def ping?
     %r/^PING /.match(@line)
+  end
+  
+  def ohai?
+    case %r/PRIVMSG (#[a-z0-0]+) :ohai/.match(@line)
+    when [_, channel]
+      channel == @bot.channel()
+    end
   end
 end
 
