@@ -5,6 +5,11 @@
 # Redistribution is permitted under the MIT license.  See LICENSE for details.
 #
 
+host    = "irc.freenode.net"
+port    = 6667
+nick    = "lolcat"
+channel = "#reia"
+
 class Lolcat
   def initialize(server, port, nick, channel)
     (@server, @port, @nick, @channel) = (server, port, nick, channel)    
@@ -77,6 +82,6 @@ class Router
   end
 end
 
-cat = Lolcat("irc.freenode.net", 6667, "ceilingcat", "#reia")
+cat = Lolcat(host, port, nick, channel)
 cat.register()
 cat.run()
