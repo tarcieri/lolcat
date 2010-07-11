@@ -42,11 +42,10 @@ class Lolcat
   
   def process_line(line)
     line.puts()    
-    router = Router(self, line)
     
-    if router.ping?()
+    if %r/^PING /.match(line)
       handle_ping(line)
-    elseif router.ohai?()
+    elseif %r/PRIVMSG (#[a-z0-0]+) :ohai/.match(line)
       send_message("PRIVMSG #{@channel} :OHAI!!")
     end
   end
@@ -64,23 +63,6 @@ class Lolcat
   
   def send_message(msg)
     @sock.write("#{msg}\r\n")
-  end
-end
-
-class Router
-  def initialize(bot, line)
-    (@bot, @line) = (bot, line)
-  end
-  
-  def ping?
-    %r/^PING /.match(@line)
-  end
-  
-  def ohai?
-    case %r/PRIVMSG (#[a-z0-0]+) :ohai/.match(@line)
-    when [_, channel]
-      channel == @bot.channel()
-    end
   end
 end
 
