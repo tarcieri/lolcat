@@ -10,6 +10,9 @@ port    = 6667
 nick    = "lolcat"
 channel = "#reia"
 
+listen_addr = "0.0.0.0"
+listen_port = 3210
+
 class Lolcat
   def initialize(@server, @port, @nick, @channel)
     @sock = TCPSocket(@server, @port, {:packet => :line})
@@ -81,6 +84,34 @@ class Router
   end
 end
 
+class Server
+  def initialize(@lolcat, @addr, @port)
+    @server = TCPServer(@addr, @port, {:packet => :line})
+    Main.puts("*** TCP server listening on #{@addr}:#{@port}")
+  end
+  
+  def run
+    connection = ConnectionHandler(@lolcat, @server.accept())
+    Process.spawn { connection.run() }
+    run()
+  end
+end
+
+class ConnectionHandler
+  def initialize(@lolcat, @sock); end
+  
+  def run()
+    line = @sock.read()
+    if line
+      @lolcat ! (:line, line)
+      run()
+    end
+  end
+end
+
 cat = Lolcat(host, port, nick, channel)
 cat.register()
+
+Process.spawn_link { Server(cat, listen_addr, listen_port).run() }
+
 cat.run()
