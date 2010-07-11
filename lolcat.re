@@ -30,12 +30,14 @@ class Lolcat
     @sock.write("JOIN #{@channel}\n")
   end
   
-  def run
+  def run    
     receive
     when (:tcp, _, line)
       process_line(line.to_s().chop())
+    when (:line, line)
+      send_message("PRIVMSG #{@channel} :#{line}")
     when msg
-      "*** Unrecognized message: #{msg.inspect()}"
+      # Ignore unrecognized messages
     end
     
     run()
@@ -68,25 +70,26 @@ class Lolcat
 end
 
 class Server
-  def initialize(@lolcat, @addr, @port)
+  def initialize(@pid, @addr, @port)
     @server = TCPServer(@addr, @port, {:packet => :line})
     "*** TCP server listening on #{@addr}:#{@port}".puts()
   end
   
   def run
-    connection = ConnectionHandler(@lolcat, @server.accept())
+    connection = ConnectionHandler(@pid, @server.accept())
     Process.spawn { connection.run() }
     run()
   end
 end
 
 class ConnectionHandler
-  def initialize(@lolcat, @sock); end
+  def initialize(@pid, @sock); end
   
   def run()
     line = @sock.read()
     if line
-      @lolcat ! (:line, line)
+      line = line.to_s().chop()
+      @pid ! (:line, line)
       run()
     end
   end
@@ -95,6 +98,7 @@ end
 cat = Lolcat(host, port, nick, channel)
 cat.register()
 
-Process.spawn_link { Server(cat, listen_addr, listen_port).run() }
+server = Server(Process.pid(), listen_addr, listen_port)
+Process.spawn_link { server.run() }
 
 cat.run()
