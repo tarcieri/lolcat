@@ -15,7 +15,7 @@ listen_port = 3210
 
 class Lolcat
   def initialize(@server, @port, @nick, @channel)
-    @sock = TCPSocket(@server, @port, {:packet => :line})
+    @sock = TCPSocket(@server, @port, {:packet => :line, :active => true})
   end
   
   # attr_reader ftw
@@ -31,15 +31,16 @@ class Lolcat
   end
   
   def run
-    line = read_line()    
-    process_line(line)
+    receive
+    when (:tcp, _, line)
+      process_line(line.to_s().chop())
+    when msg
+      "*** Unrecognized message: #{msg.inspect()}"
+    end
+    
     run()
   end
-  
-  def read_line
-    @sock.read().to_s().chop()
-  end
-  
+    
   def process_line(line)
     line.puts()    
     
@@ -55,7 +56,7 @@ class Lolcat
     [_, message] = %r/PING :(.*?)[\r\n]*$/.match(line)
     
     # Lulzy debug message
-    Main.puts("OHAI THAR SERVAR #{message}! PONG!!!")
+    "OHAI THAR SERVAR #{message}! PONG!!!".puts()
     
     # Oh yeah here's where we actually do the important thing
     send_message("PONG :#{message}")
@@ -69,7 +70,7 @@ end
 class Server
   def initialize(@lolcat, @addr, @port)
     @server = TCPServer(@addr, @port, {:packet => :line})
-    Main.puts("*** TCP server listening on #{@addr}:#{@port}")
+    "*** TCP server listening on #{@addr}:#{@port}".puts()
   end
   
   def run
