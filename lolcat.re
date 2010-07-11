@@ -11,8 +11,7 @@ nick    = "lolcat"
 channel = "#reia"
 
 class Lolcat
-  def initialize(server, port, nick, channel)
-    (@server, @port, @nick, @channel) = (server, port, nick, channel)    
+  def initialize(@server, @port, @nick, @channel)
     @sock = TCPSocket(@server, @port, {:packet => :line})
   end
   
